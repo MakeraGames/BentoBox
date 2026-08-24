@@ -8,10 +8,12 @@ import world.bentobox.bentobox.api.user.User;
 public class BentoBoxCommand extends CompositeCommand {
 
     /**
-     * BentoBox main command
+     * BentoBox main command.
+     * Rebranded in-game as /framework - class and package names intentionally unchanged
+     * so addons compiled against BentoBox keep working.
      */
     public BentoBoxCommand() {
-        super("bentobox", "bbox");
+        super("framework", "fw");
     }
 
     @Override

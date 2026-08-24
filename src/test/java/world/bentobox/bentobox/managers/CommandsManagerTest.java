@@ -90,7 +90,7 @@ class CommandsManagerTest extends CommonTestSetup {
     void testTheNamespacedFormIsInTheCommandMap() {
         cm.registerCommand(command);
 
-        assertSame(command, server.getCommandMap().getCommand("bentobox:ai"));
+        assertSame(command, server.getCommandMap().getCommand("framework:ai"));
     }
 
     @Test

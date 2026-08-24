@@ -37,7 +37,7 @@ public class BentoBoxPermsCommand extends CompositeCommand {
         // Loop all the known top-level commands
         getPlugin().getCommandsManager().getCommands().values().stream().distinct().forEach(cc -> {
             if (cc.getAddon() == null) {
-                user.sendMessage("*** BentoBox effective perms:");
+                user.sendMessage("*** Framework effective perms:");
             } else if (cc.getAddon() instanceof GameModeAddon gma) {
                 user.sendRawMessage("**** " + gma.getDescription().getName() + " effective perms:");
             } else {

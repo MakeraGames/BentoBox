@@ -275,7 +275,7 @@ public class BrigadierCommandRegistrar {
      * form of a command.
      */
     private static String namespace(@NonNull CompositeCommand command) {
-        return command.getAddon() == null ? "bentobox"
+        return command.getAddon() == null ? "framework"
                 : ((Addon) command.getAddon()).getDescription().getName().toLowerCase(Locale.ENGLISH);
     }
 

@@ -90,7 +90,7 @@ public class CommandsManager {
             commandMapField.setAccessible(true);
             commandMap = (SimpleCommandMap) commandMapField.get(Bukkit.getServer());
 
-            String commandPrefix = "bentobox";
+            String commandPrefix = "framework";
             if (command.getAddon() != null) {
                 commandPrefix = command.getAddon().getDescription().getName().toLowerCase(Locale.ENGLISH);
             }

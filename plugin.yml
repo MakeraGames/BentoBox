@@ -1,4 +1,4 @@
-name: BentoBox
+name: Framework
 main: world.bentobox.bentobox.BentoBox
 version: 3.10.2-LOCAL-SNAPSHOT-LOCAL
 api-version: "1.21"

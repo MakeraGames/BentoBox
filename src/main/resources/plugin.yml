@@ -1,4 +1,4 @@
-name: BentoBox
+name: Framework
 main: world.bentobox.bentobox.BentoBox
 version: ${project.version}${build.number}
 api-version: "1.21"
