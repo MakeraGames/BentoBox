@@ -10,6 +10,8 @@ description: ${project.description}
 
 load: STARTUP
 
+folia-supported: true
+
 loadbefore: [Pladdon, Multiverse-Core, My_Worlds, Residence]
 
 softdepend:
