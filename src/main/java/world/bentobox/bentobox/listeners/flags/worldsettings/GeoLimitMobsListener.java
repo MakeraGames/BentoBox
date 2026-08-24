@@ -3,7 +3,6 @@ package world.bentobox.bentobox.listeners.flags.worldsettings;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -32,12 +31,15 @@ public class GeoLimitMobsListener extends FlagListener {
      */
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPluginReady(BentoBoxReadyEvent event) {
-        // Kick off the task to remove entities that go outside island boundaries
-        Bukkit.getScheduler().runTaskTimer(getPlugin(), () -> {
-            mobSpawnTracker.entrySet().stream()
-            .filter(e -> !e.getValue().onIsland(e.getKey().getLocation()))
-            .map(Map.Entry::getKey)
-            .forEach(Entity::remove);
+        // Kick off the task to remove entities that go outside island boundaries.
+        // The per-entity check runs on the entity's owning thread: on Folia the global
+        // sweep must not read locations of or remove entities owned by other regions.
+        getPlugin().getScheduler().runGlobalTimer(() -> {
+            mobSpawnTracker.forEach((entity, island) -> getPlugin().getScheduler().runAtEntity(entity, () -> {
+                if (!island.onIsland(entity.getLocation())) {
+                    entity.remove();
+                }
+            }));
             mobSpawnTracker.keySet().removeIf(e -> e == null || e.isDead());
         }, 20L, 20L);
     }

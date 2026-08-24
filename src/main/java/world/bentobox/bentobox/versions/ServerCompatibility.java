@@ -77,6 +77,10 @@ public class ServerCompatibility {
         GLOWSTONE(Compatibility.INCOMPATIBLE), SPIGOT(Compatibility.COMPATIBLE), PAPER(Compatibility.SUPPORTED),
         PURPUR(Compatibility.SUPPORTED), TACOSPIGOT(Compatibility.NOT_SUPPORTED), AKARIN(Compatibility.NOT_SUPPORTED),
         /**
+         * @since 3.23.0
+         */
+        FOLIA(Compatibility.COMPATIBLE),
+        /**
          * @since 1.14.0
          */
         UNKNOWN(Compatibility.INCOMPATIBLE);
@@ -264,6 +268,10 @@ public class ServerCompatibility {
      */
     @NonNull
     public ServerSoftware getServerSoftware() {
+        if (Util.isFolia()) {
+            // Folia is a Paper fork, so check it first
+            return ServerSoftware.FOLIA;
+        }
         if (Util.isPaper()) {
             return ServerSoftware.PAPER;
         }

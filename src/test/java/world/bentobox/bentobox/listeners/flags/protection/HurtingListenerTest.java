@@ -84,9 +84,6 @@ class HurtingListenerTest extends CommonTestSetup {
 
         // User & player
         user = User.getInstance(mockPlayer);
-
-        // Server – needed by onLingeringPotionSplash which calls getPlugin().getServer().getScheduler()
-        when(plugin.getServer()).thenReturn(server);
     }
 
     @Override

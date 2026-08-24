@@ -3,8 +3,8 @@ package world.bentobox.bentobox.listeners.flags.worldsettings;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
@@ -12,13 +12,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.scheduler.BukkitTask;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.events.BentoBoxReadyEvent;
 import world.bentobox.bentobox.api.flags.FlagListener;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.lists.Flags;
 import world.bentobox.bentobox.nms.WorldRegenerator;
 import world.bentobox.bentobox.util.Util;
@@ -44,7 +44,7 @@ public class CleanSuperFlatListener extends FlagListener {
      * @since 1.1
      */
     @Nullable
-    private BukkitTask task;
+    private SchedulerTask task;
 
     /**
      * Whether BentoBox is ready or not.
@@ -95,7 +95,7 @@ public class CleanSuperFlatListener extends FlagListener {
         
         if (this.task == null || this.task.isCancelled())
         {
-            this.task = Bukkit.getScheduler().runTaskTimer(this.plugin, () -> this.cleanChunk(world), 0L, 1L);
+            this.task = this.plugin.getScheduler().runGlobalTimer(() -> this.cleanChunk(world), 0L, 1L);
         }
     }
 
@@ -109,15 +109,21 @@ public class CleanSuperFlatListener extends FlagListener {
         if (!this.chunkQueue.isEmpty())
         {
             Chunk chunk = this.chunkQueue.poll();
+            int remaining = this.chunkQueue.size();
 
-            regenerator.regenerateChunk(chunk);
-            
-            if (this.plugin.getSettings().isLogCleanSuperFlatChunks())
-            {
-                this.plugin.log("Regenerating superflat chunk in " + world.getName() +
-                    " at (" + chunk.getX() + ", " + chunk.getZ() + ") " +
-                    "(" + this.chunkQueue.size() + " chunk(s) remaining in the queue)");
-            }
+            // Regenerate on the region that owns the chunk - the global timer thread
+            // must not touch region-owned chunks on Folia.
+            this.plugin.getScheduler().runAtLocation(
+                    new Location(world, chunk.getX() << 4, 0d, chunk.getZ() << 4), () -> {
+                regenerator.regenerateChunk(chunk);
+
+                if (this.plugin.getSettings().isLogCleanSuperFlatChunks())
+                {
+                    this.plugin.log("Regenerating superflat chunk in " + world.getName() +
+                        " at (" + chunk.getX() + ", " + chunk.getZ() + ") " +
+                        "(" + remaining + " chunk(s) remaining in the queue)");
+                }
+            });
         }
         else
         {

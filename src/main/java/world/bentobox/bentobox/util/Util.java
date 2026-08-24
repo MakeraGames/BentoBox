@@ -674,6 +674,22 @@ public class Util {
     }
 
     /**
+     * Check if the server runs Folia (regionized multithreading).
+     * The class checked here exists only in the Folia server jar — the Folia scheduler
+     * interfaces are visible in the plain Paper API, so they cannot be used for detection.
+     * @return True for Folia environments
+     * @since 3.23.0
+     */
+    public static boolean isFolia() {
+        try {
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    /**
      * This method translates color codes in given string and strips whitespace after them.
      * This code parses both: hex and old color codes.
      * Multi-line strings are processed line by line to ensure each line retains its own

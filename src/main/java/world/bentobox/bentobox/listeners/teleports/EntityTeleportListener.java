@@ -295,7 +295,7 @@ public non-sealed class EntityTeleportListener extends AbstractTeleportListener 
         // It is placed outside THE_END check, as technically it could happen with the nether portal too.
 
         // If there is a portal to go to already, then the player will go there
-        Bukkit.getScheduler().runTask(this.plugin, () -> {
+        this.plugin.getScheduler().runAtEntity(event.getEntity(), () -> {
             if (!event.getEntity().getWorld().equals(toWorld))
             {
                 // Else manually teleport entity

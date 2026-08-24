@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
 import world.bentobox.bentobox.api.commands.ConfirmableCommand;
 import world.bentobox.bentobox.api.commands.admin.range.AdminRangeDisplayCommand;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.blueprints.BlueprintClipboard;
 import world.bentobox.bentobox.managers.BlueprintsManager;
@@ -23,7 +23,7 @@ public class AdminBlueprintCommand extends ConfirmableCommand {
     private Map<UUID, BlueprintClipboard> clipboards;
 
     // Map containing selection cuboid display tasks
-    private Map<User, Integer> displayClipboards;
+    private Map<User, SchedulerTask> displayClipboards;
     private static final Particle.DustOptions PARTICLE_DUST_OPTIONS = new Particle.DustOptions(Color.RED, 1.0F);
 
     public AdminBlueprintCommand(CompositeCommand parent) {
@@ -71,8 +71,13 @@ public class AdminBlueprintCommand extends ConfirmableCommand {
      */
     protected void showClipboard(User user)
     {
+        if (!user.isPlayer())
+        {
+            // The particles are shown to a specific player; no player, nothing to show.
+            return;
+        }
         this.displayClipboards.computeIfAbsent(user,
-            key -> Bukkit.getScheduler().scheduleSyncRepeatingTask(this.getPlugin(), () ->
+            key -> this.getPlugin().getScheduler().runAtEntityTimer(key.getPlayer(), () ->
             {
                 if (!key.isPlayer() || !key.getPlayer().isOnline())
                 {
@@ -139,7 +144,7 @@ public class AdminBlueprintCommand extends ConfirmableCommand {
 
     protected void hideClipboard(User user) {
         if (displayClipboards.containsKey(user)) {
-            Bukkit.getScheduler().cancelTask(displayClipboards.get(user));
+            displayClipboards.get(user).cancel();
             displayClipboards.remove(user);
         }
     }

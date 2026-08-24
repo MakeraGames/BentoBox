@@ -100,7 +100,7 @@ public class JoinLeaveListener implements Listener {
         // island.
         if (plugin.getIslands().locationIsOnIsland(event.getPlayer(), user.getLocation())
                 && Flags.REMOVE_MOBS.isSetForWorld(user.getWorld())) {
-            Bukkit.getScheduler().runTask(plugin, () -> plugin.getIslands().clearArea(user.getLocation()));
+            plugin.getScheduler().runAtLocation(user.getLocation(), () -> plugin.getIslands().clearArea(user.getLocation()));
         }
 
         // Clear inventory if required
@@ -177,9 +177,9 @@ public class JoinLeaveListener implements Listener {
                         };
 
                         if (delay <= 0) {
-                            Bukkit.getScheduler().runTask(plugin, createIsland);
+                            plugin.getScheduler().runAtEntity(user.getPlayer(), createIsland);
                         } else {
-                            Bukkit.getScheduler().runTaskLater(plugin, createIsland, delay * 20L);
+                            plugin.getScheduler().runAtEntityLater(user.getPlayer(), createIsland, delay * 20L);
                         }
                     }
                 });
@@ -211,7 +211,7 @@ public class JoinLeaveListener implements Listener {
                     u -> gm.getPlayerCommand().ifPresent(c -> c.call(u, c.getLabel(), Collections.emptyList())))));
             // Build now so a build failure falls back; show a little after join so the client is ready
             BBDialog dialog = builder.build();
-            Bukkit.getScheduler().runTaskLater(plugin, () -> dialog.show(user), 20L);
+            plugin.getScheduler().runAtEntityLater(user.getPlayer(), () -> dialog.show(user), 20L);
             return true;
         } catch (Exception e) {
             plugin.logError("Could not show game mode selection dialog: " + e.getMessage());

@@ -2,7 +2,6 @@ package world.bentobox.bentobox.hooks;
 
 import java.util.function.Consumer;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
@@ -10,6 +9,7 @@ import org.bukkit.entity.Entity;
 import io.lumine.mythic.bukkit.BukkitAdapter;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
+import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.hooks.Hook;
 import world.bentobox.bentobox.blueprints.dataobjects.BlueprintEntity.MythicMobRecord;
 
@@ -114,7 +114,7 @@ public class MythicMobsHook extends Hook {
             if (delayTicks <= 0L) {
                 spawn.run();
             } else {
-                Bukkit.getScheduler().runTaskLater(getPlugin(), spawn, delayTicks);
+                BentoBox.getInstance().getScheduler().runAtLocationLater(spawnLocation, spawn, delayTicks);
             }
             return true;
         }).orElse(false);

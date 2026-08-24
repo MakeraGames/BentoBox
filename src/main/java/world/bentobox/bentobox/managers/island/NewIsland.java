@@ -236,7 +236,7 @@ public class NewIsland {
         // Run post-creation tasks after creating the island
         if (noPaste) {
             // If noPaste is true, skip blueprint paste and run post-creation immediately
-            Bukkit.getScheduler().runTask(plugin, () -> postCreationTask(oldIsland));
+            plugin.getScheduler().runAtLocation(island.getCenter(), () -> postCreationTask(oldIsland));
         } else {
             if (user.getWorld().equals(island.getWorld())) {
                 // Determine if NMS (native Minecraft server) paste is needed based on player state

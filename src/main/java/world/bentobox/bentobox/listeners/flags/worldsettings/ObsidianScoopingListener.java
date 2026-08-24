@@ -7,7 +7,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -156,7 +155,7 @@ public class ObsidianScoopingListener extends FlagListener {
             previous.remove();
         }
         // Schedule removal after the configured duration
-        Bukkit.getScheduler().runTaskLater(bentoBox, () -> {
+        bentoBox.getScheduler().runAtEntityLater(hologram, () -> {
             if (activeHolograms.remove(key, hologram) && hologram.isValid()) {
                 hologram.remove();
             }
@@ -260,7 +259,7 @@ public class ObsidianScoopingListener extends FlagListener {
             user.sendMessage("protection.flags.OBSIDIAN_SCOOPING.scooping");
             player.getWorld().playSound(player.getLocation(), Sound.ITEM_BUCKET_FILL_LAVA, 1F, 1F);
             e.setCancelled(true);
-            Bukkit.getScheduler().runTask(BentoBox.getInstance(), () -> givePlayerLava(player, b, bucket));
+            BentoBox.getInstance().getScheduler().runAtEntity(player, () -> givePlayerLava(player, b, bucket));
             return true;
         }
         return false;

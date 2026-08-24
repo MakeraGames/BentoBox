@@ -14,10 +14,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
-import org.bukkit.scheduler.BukkitTask;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.api.events.BentoBoxReadyEvent;
 import world.bentobox.bentobox.api.events.island.IslandCreatedEvent;
 import world.bentobox.bentobox.api.events.island.IslandResettedEvent;
@@ -43,7 +43,7 @@ public class ChunkPregenManager implements Listener {
     private final BentoBox plugin;
     private final Map<World, Deque<ChunkCoord>> chunkQueues = new ConcurrentHashMap<>();
     private final List<World> activeWorlds = new ArrayList<>();
-    private BukkitTask schedulerTask;
+    private SchedulerTask schedulerTask;
     private int roundRobinIndex;
     /** Set true once {@link BentoBoxReadyEvent} has fired. */
     private boolean bentoBoxReady;
@@ -290,7 +290,7 @@ public class ChunkPregenManager implements Listener {
             return;
         }
         int tickInterval = Math.max(1, plugin.getSettings().getPregenTickInterval());
-        schedulerTask = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, tickInterval, tickInterval);
+        schedulerTask = plugin.getScheduler().runGlobalTimer(this::tick, tickInterval, tickInterval);
     }
 
     /**

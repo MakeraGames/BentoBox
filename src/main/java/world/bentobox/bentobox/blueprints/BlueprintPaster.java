@@ -13,17 +13,16 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.bukkit.Bukkit;
 import org.bukkit.HeightMap;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.localization.TextVariables;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.blueprints.dataobjects.BlueprintBlock;
 import world.bentobox.bentobox.blueprints.dataobjects.BlueprintEntity;
@@ -67,7 +66,7 @@ public class BlueprintPaster {
     // The maximum block position (x,y,z)
     private Location pos2;
     private PasteState pasteState;
-    private BukkitTask pastingTask;
+    private SchedulerTask pastingTask;
     private BlueprintClipboard clipboard;
     private CompletableFuture<Void> currentTask = CompletableFuture.completedFuture(null);
     private boolean sink;
@@ -191,7 +190,7 @@ public class BlueprintPaster {
         Bits bits = new Bits(blocks, attached, entities,
                 blocks.entrySet().iterator(), attached.entrySet().iterator(), entities.entrySet().iterator(),
                 plugin.getSettings().getPasteSpeed());
-        pastingTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> pasterTask(result, owner, bits, useNMS), 0L, 1L);
+        pastingTask = plugin.getScheduler().runAtLocationTimer(location, () -> pasterTask(result, owner, bits, useNMS), 0L, 1L);
 
         return result;
     }

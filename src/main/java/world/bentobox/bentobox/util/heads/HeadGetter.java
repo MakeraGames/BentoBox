@@ -129,7 +129,7 @@ public class HeadGetter {
      * @since 1.14.1
      */
     private void runPlayerHeadGetter() {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+        plugin.getScheduler().runAsyncTimer(() -> {
             synchronized (HeadGetter.names) {
                 int counter = 0;
 
@@ -138,7 +138,7 @@ public class HeadGetter {
                     final String userName = elementEntry.getKey();
 
                     // Hmm, task in task in task. That is a weird structure.
-                    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    plugin.getScheduler().runAsync(() -> {
                         // Check if we can get user Id.
                         UUID userId;
 
@@ -196,7 +196,7 @@ public class HeadGetter {
 
                                 if (!plugin.isShutdown()) {
                                     // Do not run task if plugin is shutting down.
-                                    Bukkit.getScheduler().runTaskAsynchronously(this.plugin,
+                                    this.plugin.getScheduler().runAsync(
                                             () -> req.setHead(elementEntry.getValue()));
                                 }
                             }

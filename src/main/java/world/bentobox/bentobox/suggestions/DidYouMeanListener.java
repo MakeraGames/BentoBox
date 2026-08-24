@@ -125,7 +125,7 @@ public class DidYouMeanListener implements Listener {
      */
     boolean acceptPending(UUID uuid) {
         return plugin.getSuggestionsManager().acceptPending(uuid).map(command -> {
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            plugin.getScheduler().runGlobal(() -> {
                 Player player = Bukkit.getPlayer(uuid);
                 if (player != null) {
                     try {

@@ -13,7 +13,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -21,6 +20,10 @@ import world.bentobox.bentobox.api.configuration.Config;
 import world.bentobox.bentobox.api.events.BentoBoxReadyEvent;
 import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.panels.Panel;
+import world.bentobox.bentobox.api.scheduler.BentoBoxScheduler;
+import world.bentobox.bentobox.api.scheduler.BukkitSchedulerService;
+import world.bentobox.bentobox.api.scheduler.FoliaSchedulerService;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.api.user.Notifier;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.AbstractDatabaseHandler;
@@ -48,6 +51,7 @@ import world.bentobox.bentobox.managers.RanksManager;
 import world.bentobox.bentobox.managers.WebManager;
 import world.bentobox.bentobox.util.ExpiringMap;
 import world.bentobox.bentobox.util.Pair;
+import world.bentobox.bentobox.util.Util;
 import world.bentobox.bentobox.util.heads.HeadGetter;
 import world.bentobox.bentobox.versions.ServerCompatibility;
 
@@ -120,7 +124,10 @@ public class BentoBox extends JavaPlugin implements Listener {
 
     private Config<Settings> configObject;
 
-    private BukkitTask blueprintLoadingTask;
+    private SchedulerTask blueprintLoadingTask;
+
+    // Platform-neutral scheduler (Folia-aware)
+    private BentoBoxScheduler scheduler;
 
     private boolean shutdown;
 
@@ -208,7 +215,7 @@ public class BentoBox extends JavaPlugin implements Listener {
 
         final long loadTime = System.currentTimeMillis() - loadStart;
 
-        Bukkit.getScheduler().runTask(instance, () -> {
+        getScheduler().runGlobal(() -> {
             try {
                 completeSetup(loadTime);
             } catch (Exception e) {
@@ -287,7 +294,7 @@ public class BentoBox extends JavaPlugin implements Listener {
                 "[time]", String.valueOf(loadTime + enableTime));
 
         // Poll for blueprints loading to be finished - async so could be a completely variable time
-        blueprintLoadingTask = Bukkit.getScheduler().runTaskTimer(instance, () -> {
+        blueprintLoadingTask = getScheduler().runGlobalTimer(() -> {
             if (getBlueprintsManager().isBlueprintsLoaded()) {
                 blueprintLoadingTask.cancel();
                 // Tell all addons that everything is loaded
@@ -368,7 +375,25 @@ public class BentoBox extends JavaPlugin implements Listener {
         if (housekeepingManager != null) {
             housekeepingManager.stop();
         }
+        // Cancel remaining scheduled tasks. Bukkit does this automatically on disable;
+        // Folia's global and async schedulers need it done explicitly.
+        if (scheduler != null) {
+            scheduler.cancelAll();
+        }
+    }
 
+    /**
+     * Returns the platform-neutral scheduler. Use this instead of {@code Bukkit.getScheduler()}
+     * so tasks run on the correct thread on Folia as well as on Paper/Spigot.
+     * @return the scheduler
+     * @since 3.23.0
+     */
+    @NonNull
+    public BentoBoxScheduler getScheduler() {
+        if (scheduler == null) {
+            scheduler = Util.isFolia() ? new FoliaSchedulerService(this) : new BukkitSchedulerService(this);
+        }
+        return scheduler;
     }
 
     /**

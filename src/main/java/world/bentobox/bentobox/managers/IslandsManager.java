@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -33,7 +34,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.PufferFish;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -51,6 +51,7 @@ import world.bentobox.bentobox.api.flags.Flag;
 import world.bentobox.bentobox.api.localization.TextVariables;
 import world.bentobox.bentobox.api.logs.LogEntry;
 import world.bentobox.bentobox.api.logs.LogEntry.LogType;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.Database;
 import world.bentobox.bentobox.database.json.BentoboxTypeAdapterFactory;
@@ -1626,20 +1627,21 @@ public class IslandsManager {
     private void saveAllScheduled() {
         isSaveTaskRunning = true;
         Queue<Island> queue = new LinkedList<>(islandCache.getCachedIslands());
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < plugin.getSettings().getMaxSavedIslandsPerTick(); i++) {
-                    Island island = queue.poll();
-                    if (island == null) {
-                        isSaveTaskRunning = false;
-                        cancel();
-                        return;
+        AtomicReference<SchedulerTask> taskRef = new AtomicReference<>();
+        taskRef.set(plugin.getScheduler().runGlobalTimer(() -> {
+            for (int i = 0; i < plugin.getSettings().getMaxSavedIslandsPerTick(); i++) {
+                Island island = queue.poll();
+                if (island == null) {
+                    isSaveTaskRunning = false;
+                    SchedulerTask task = taskRef.get();
+                    if (task != null) {
+                        task.cancel();
                     }
-                    trySaveIsland(island);
+                    return;
                 }
+                trySaveIsland(island);
             }
-        }.runTaskTimer(plugin, 0, 1);
+        }, 0, 1));
     }
 
     /**
@@ -1812,7 +1814,7 @@ public class IslandsManager {
      * @param uniqueId - UUID of player
      */
     public void clearRank(int rank, UUID uniqueId) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> clearRankSync(rank, uniqueId));
+        plugin.getScheduler().runAsync(() -> clearRankSync(rank, uniqueId));
     }
 
     void clearRankSync(int rank, UUID uniqueId) {

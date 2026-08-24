@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -27,7 +26,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.eclipse.jdt.annotation.NonNull;
@@ -35,6 +33,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.localization.TextVariables;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.blueprints.dataobjects.BlueprintBlock;
 import world.bentobox.bentobox.blueprints.dataobjects.BlueprintCreatureSpawner;
@@ -62,7 +61,7 @@ public class BlueprintClipboard {
     private @Nullable Location pos1;
     private @Nullable Location pos2;
     private @Nullable Vector origin;
-    private BukkitTask copyTask;
+    private SchedulerTask copyTask;
     private int count;
     private boolean copying;
     private int index;
@@ -139,13 +138,15 @@ public class BlueprintClipboard {
 
         int speed = plugin.getSettings().getPasteSpeed();
         List<Vector> vectorsToCopy = getVectors(toCopy);
-        Bukkit.getScheduler().runTaskAsynchronously(plugin,
-                () -> copyAsync(world, user, vectorsToCopy, speed, copyAir, copyBiome, noWater));
+        // Copy origin - the location the repeating copy task must run at
+        Location copyOrigin = pos1.clone();
+        plugin.getScheduler().runAsync(
+                () -> copyAsync(copyOrigin, world, user, vectorsToCopy, speed, copyAir, copyBiome, noWater));
         return true;
     }
 
-    private void copyAsync(World world, User user, List<Vector> vectorsToCopy, int speed, boolean copyAir,
-            boolean copyBiome, boolean noWater) {
+    private void copyAsync(Location copyOrigin, World world, User user, List<Vector> vectorsToCopy, int speed,
+            boolean copyAir, boolean copyBiome, boolean noWater) {
         copying = false;
         // FancyNpcs
         // Add all the citizens for the area in one go. This is pretty fast.
@@ -153,8 +154,8 @@ public class BlueprintClipboard {
         // ZNPCsPlus NPCs
         znpc.ifPresent(znpCsPlusHook -> bpEntities.putAll(znpCsPlusHook.getNpcsInArea(world, vectorsToCopy, origin)));
 
-        // Repeating copy task
-        copyTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+        // Repeating copy task - runs on the region that owns the copy area
+        copyTask = plugin.getScheduler().runAtLocationTimer(copyOrigin, () -> {
             if (copying) {
                 return;
             }

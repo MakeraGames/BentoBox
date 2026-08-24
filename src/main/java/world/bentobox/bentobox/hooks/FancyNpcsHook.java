@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -150,7 +149,7 @@ public class FancyNpcsHook extends NPCHook {
         Npc npc = FancyNpcsPlugin.get().getNpcAdapter().apply(data);
         parseEquipment(npcConfig, npc);
 
-        Bukkit.getScheduler().runTask(getPlugin(), () -> {
+        BentoBox.getInstance().getScheduler().runAtLocation(location, () -> {
             FancyNpcsPlugin.get().getNpcManager().registerNpc(npc);
             npc.create();
             npc.spawnForAll();

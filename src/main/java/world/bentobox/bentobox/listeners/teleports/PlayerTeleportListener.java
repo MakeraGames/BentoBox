@@ -90,7 +90,7 @@ public non-sealed class PlayerTeleportListener extends AbstractTeleportListener 
         if (!Bukkit.getAllowNether() && type.equals(Material.NETHER_PORTAL))
         {
             // Schedule a time
-            Bukkit.getScheduler().runTaskLater(this.plugin, () ->
+            this.plugin.getScheduler().runAtEntityLater(entity, () ->
             {
                 // Check again if still in portal
                 if (this.inPortal.contains(uuid))
@@ -202,7 +202,7 @@ public non-sealed class PlayerTeleportListener extends AbstractTeleportListener 
                 // Anchor the respawn at the island center so the player does not appear at
                 // the server spawn, then schedule SafeSpotTeleport to find a truly safe spot.
                 event.setRespawnLocation(island.getProtectionCenter());
-                Bukkit.getScheduler().runTask(this.plugin, () ->
+                this.plugin.getScheduler().runAtEntity(event.getPlayer(), () ->
                         new SafeSpotTeleport.Builder(this.plugin)
                                 .entity(event.getPlayer())
                                 .island(island)
@@ -365,7 +365,7 @@ public non-sealed class PlayerTeleportListener extends AbstractTeleportListener 
         // It is placed outside THE_END check, as technically it could happen with the nether portal too.
 
         // If there is a portal to go to already, then the player will go there
-        Bukkit.getScheduler().runTask(this.plugin, () -> {
+        this.plugin.getScheduler().runAtEntity(event.getPlayer(), () -> {
             if (!event.getPlayer().getWorld().equals(toWorld))
             {
                 // Else manually teleport entity
