@@ -55,7 +55,7 @@ abstract class AbstractPurgeCommand extends CompositeCommand {
         getPlugin().log(logPrefix() + ": world save complete");
 
         inPurge = true;
-        Bukkit.getScheduler().runTaskAsynchronously(getPlugin(), () -> {
+        getPlugin().getScheduler().runAsync(() -> {
             try {
                 lastScan = scanFn.get();
                 displayResultsAndPrompt(lastScan);
@@ -83,13 +83,13 @@ abstract class AbstractPurgeCommand extends CompositeCommand {
         try {
             beforeDelete(scan);
             getPlugin().log(logPrefix() + ": world save complete, dispatching deletion");
-            Bukkit.getScheduler().runTaskAsynchronously(getPlugin(), () -> {
+            getPlugin().getScheduler().runAsync(() -> {
                 boolean ok = false;
                 try {
                     ok = getPlugin().getPurgeRegionsService().delete(scan);
                 } finally {
                     boolean deleteSucceeded = ok;
-                    Bukkit.getScheduler().runTask(getPlugin(), () -> {
+                    getPlugin().getScheduler().runGlobal(() -> {
                         try {
                             if (deleteSucceeded) {
                                 user.sendMessage(successMessageKey());
@@ -120,9 +120,9 @@ abstract class AbstractPurgeCommand extends CompositeCommand {
         logScanContents(uniqueIslands, scan);
 
         if (scan.isEmpty()) {
-            Bukkit.getScheduler().runTask(getPlugin(), () -> user.sendMessage(NONE_FOUND));
+            getPlugin().getScheduler().runGlobal(() -> user.sendMessage(NONE_FOUND));
         } else {
-            Bukkit.getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getScheduler().runGlobal(() -> {
                 user.sendMessage("commands.admin.purge.purgable-islands",
                         TextVariables.NUMBER, String.valueOf(uniqueIslands.size()));
                 sendConfirmPrompt();

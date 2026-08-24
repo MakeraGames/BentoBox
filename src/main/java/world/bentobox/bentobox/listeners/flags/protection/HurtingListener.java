@@ -181,7 +181,7 @@ public class HurtingListener extends FlagListener {
         if (projectile.getShooter() instanceof Player player) {
             // Store it and remove it when the effect is gone
             thrownPotions.put(e.getAreaEffectCloud().getEntityId(), player);
-            getPlugin().getServer().getScheduler().runTaskLater(getPlugin(), () -> thrownPotions.remove(e.getAreaEffectCloud().getEntityId()), e.getAreaEffectCloud().getDuration());
+            getPlugin().getScheduler().runGlobalLater(() -> thrownPotions.remove(e.getAreaEffectCloud().getEntityId()), e.getAreaEffectCloud().getDuration());
         }
     }
 

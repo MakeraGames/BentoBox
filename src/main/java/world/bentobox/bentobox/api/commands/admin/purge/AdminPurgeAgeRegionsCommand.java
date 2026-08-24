@@ -77,10 +77,10 @@ public class AdminPurgeAgeRegionsCommand extends CompositeCommand implements Lis
 
         running = true;
         final int finalDays = days;
-        Bukkit.getScheduler().runTaskAsynchronously(getPlugin(), () -> {
+        getPlugin().getScheduler().runAsync(() -> {
             try {
                 int count = getPlugin().getPurgeRegionsService().ageRegions(getWorld(), finalDays);
-                Bukkit.getScheduler().runTask(getPlugin(), () -> {
+                getPlugin().getScheduler().runGlobal(() -> {
                     user.sendMessage("commands.admin.purge.age-regions.done",
                             TextVariables.NUMBER, String.valueOf(count));
                     getPlugin().log("Age-regions: " + count + " region file(s) aged by "

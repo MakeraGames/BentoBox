@@ -11,13 +11,12 @@ import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitTask;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.addons.Addon;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 
 /**
  * An abstract class that handles insert/select-operations into/from a database
@@ -50,7 +49,7 @@ public abstract class AbstractDatabaseHandler<T> {
     /**
      * Async save task that runs repeatedly
      */
-    private BukkitTask asyncSaveTask;
+    private SchedulerTask asyncSaveTask;
     private boolean inSave;
 
     protected boolean shutdown;
@@ -124,7 +123,7 @@ public abstract class AbstractDatabaseHandler<T> {
         if (!plugin.isEnabled()) return;
         // Run async queue
         processQueue = new ConcurrentLinkedQueue<>();
-        asyncSaveTask = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+        asyncSaveTask = plugin.getScheduler().runAsyncTimer(() -> {
             // Check shutdown
             if(shutdown || plugin.isShutdown()) {
                 // Cancel - this will only get called if the plugin is shutdown separately to the server
@@ -209,7 +208,7 @@ public abstract class AbstractDatabaseHandler<T> {
     public CompletableFuture<List<T>> loadObjectsASync() {
         CompletableFuture<List<T>> completableFuture = new CompletableFuture<>();
 
-        Bukkit.getScheduler().runTaskAsynchronously(BentoBox.getInstance(), () -> {
+        BentoBox.getInstance().getScheduler().runAsync(() -> {
             try {
                 completableFuture.complete(loadObjects()); // Complete the future with the result
             } catch (Exception e) {

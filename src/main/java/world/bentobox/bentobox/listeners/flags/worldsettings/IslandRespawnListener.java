@@ -87,7 +87,7 @@ public class IslandRespawnListener extends FlagListener {
                     // SafeSpotTeleport to relocate them to the nearest truly safe spot.
                     e.setRespawnLocation(island.getProtectionCenter());
                     Player player = e.getPlayer();
-                    Bukkit.getScheduler().runTask(getPlugin(), () ->
+                    getPlugin().getScheduler().runAtEntity(player, () ->
                             new SafeSpotTeleport.Builder(getPlugin())
                                     .entity(player)
                                     .island(island)

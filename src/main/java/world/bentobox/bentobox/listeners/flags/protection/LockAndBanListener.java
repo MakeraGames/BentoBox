@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -99,7 +98,7 @@ public class LockAndBanListener extends FlagListener {
         // Check from - just in case the player is inside the island
         if (!check(e.getPlayer(), e.getFrom()).isAllowed()) {
             // Has to be done 1 tick later otherwise it doesn't happen for some reason...
-            Bukkit.getScheduler().runTask(BentoBox.getInstance(), () -> eject(e.getPlayer()));
+            BentoBox.getInstance().getScheduler().runAtEntity(e.getPlayer(), () -> eject(e.getPlayer()));
         }
     }
 

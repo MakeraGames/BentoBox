@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.conversations.ConversationContext;
@@ -241,7 +240,7 @@ public class IslandTeamInviteGUI {
         }
         if (clickType.equals(ClickType.LEFT)) {
             // Close inventory after one tick to allow the no pickup click return to occur
-            Bukkit.getScheduler().runTask(plugin, user::closeInventory);
+            plugin.getScheduler().runAtEntity(user.getPlayer(), user::closeInventory);
             if (itic.canExecute(user, itic.getLabel(), List.of(player.getName()))) {
                 plugin.log("Invite sent to: " + player.getName() + " by " + user.getName() + " to join island in "
                         + itc.getWorld().getName());
@@ -252,7 +251,7 @@ public class IslandTeamInviteGUI {
             }
         } else if (clickType.equals(ClickType.RIGHT)) {
             // Close inventory after one tick to allow the no pickup click return to occur
-            Bukkit.getScheduler().runTask(plugin, user::closeInventory);
+            plugin.getScheduler().runAtEntity(user.getPlayer(), user::closeInventory);
             if (this.itc.getCoopCommand().canExecute(user, itic.getLabel(), List.of(player.getName()))) {
                 plugin.log("Coop: " + player.getName() + " cooped " + user.getName() + " to island in "
                         + itc.getWorld().getName());
@@ -264,7 +263,7 @@ public class IslandTeamInviteGUI {
             }
         } else if (clickType.equals(ClickType.SHIFT_LEFT)) {
             // Close inventory after one tick to allow the no pickup click return to occur
-            Bukkit.getScheduler().runTask(plugin, user::closeInventory);
+            plugin.getScheduler().runAtEntity(user.getPlayer(), user::closeInventory);
             if (this.itc.getTrustCommand().canExecute(user, itic.getLabel(), List.of(player.getName()))) {
                 plugin.log("Trust: " + player.getName() + " trusted " + user.getName() + " to island in "
                         + itc.getWorld().getName());
@@ -301,7 +300,7 @@ public class IslandTeamInviteGUI {
             searchName = input;
             // Return to the GUI but give a second for the error to show
             // TODO: return the failed input and display the options in the GUI.
-            Bukkit.getScheduler().runTaskLater(BentoBox.getInstance(), () -> build(user), 20L);
+            plugin.getScheduler().runAtEntityLater(user.getPlayer(), () -> build(user), 20L);
             return Prompt.END_OF_CONVERSATION;
         }
 

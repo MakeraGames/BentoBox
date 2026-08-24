@@ -377,7 +377,7 @@ public class YamlDatabaseHandler<T> extends AbstractDatabaseHandler<T> {
                 plugin.logStacktrace(e);
             }
         } else {
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, ()-> {
+            plugin.getScheduler().runAsync(()-> {
                 try {
                     processFile(completableFuture, instance);
                 } catch (IllegalAccessException | InvocationTargetException | IntrospectionException e) {

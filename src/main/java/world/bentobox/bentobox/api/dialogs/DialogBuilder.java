@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -255,7 +254,7 @@ public class DialogBuilder {
     }
 
     /**
-     * Runs a button callback on the server's main thread with the clicking user.
+     * Runs a button callback on the thread that owns the clicking player.
      * Server-side dialog callbacks may be delivered off the main thread, so BentoBox
      * / addon code (which is not thread-safe) is dispatched back to it.
      */
@@ -264,6 +263,6 @@ public class DialogBuilder {
             return;
         }
         User user = User.getInstance(player);
-        Bukkit.getScheduler().runTask(BentoBox.getInstance(), () -> onClick.accept(user));
+        BentoBox.getInstance().getScheduler().runAtEntity(player, () -> onClick.accept(user));
     }
 }

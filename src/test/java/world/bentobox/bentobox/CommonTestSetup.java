@@ -54,6 +54,7 @@ import com.google.common.collect.ImmutableSet;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import world.bentobox.bentobox.api.configuration.WorldSettings;
+import world.bentobox.bentobox.api.scheduler.BukkitSchedulerService;
 import world.bentobox.bentobox.api.user.Notifier;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
@@ -213,6 +214,8 @@ public abstract class CommonTestSetup {
         mockedUtil.when(() -> Util.findFirstMatchingEnum(any(), any())).thenCallRealMethod();
         // Server & Scheduler
         mockedBukkit.when(Bukkit::getScheduler).thenReturn(sch);
+        // Platform-neutral scheduler: real Bukkit-backed service so calls flow to the sch mock
+        when(plugin.getScheduler()).thenReturn(new BukkitSchedulerService(plugin));
         // Hooks
         when(hooksManager.getHook(anyString())).thenReturn(Optional.empty());
         when(plugin.getHooks()).thenReturn(hooksManager);

@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.bukkit.Bukkit;
 import org.eclipse.jdt.annotation.Nullable;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
@@ -94,7 +93,7 @@ public class AdminRangePurgeBonusCommand extends CompositeCommand {
         inPurge = true;
         getPlugin().getIslands().getIslandsASync().thenAccept(all -> {
             List<String> ids = findIslandIds(all, id);
-            Bukkit.getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getScheduler().runGlobal(() -> {
                 inPurge = false;
                 if (ids.isEmpty()) {
                     user.sendMessage("commands.admin.range.purgebonus.none", "[id]", id);
@@ -109,7 +108,7 @@ public class AdminRangePurgeBonusCommand extends CompositeCommand {
             });
         }).exceptionally(ex -> {
             getPlugin().logStacktrace(ex);
-            Bukkit.getScheduler().runTask(getPlugin(), () -> {
+            getPlugin().getScheduler().runGlobal(() -> {
                 inPurge = false;
                 user.sendMessage("commands.admin.range.purgebonus.failed");
             });

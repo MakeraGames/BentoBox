@@ -13,10 +13,10 @@ import java.util.concurrent.TimeoutException;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.scheduler.BukkitTask;
 
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.api.addons.GameModeAddon;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.managers.PurgeRegionsService.PurgeScanResult;
 
 /**
@@ -59,7 +59,7 @@ public class HousekeepingManager {
     private volatile long lastAgeRunMillis;
     private volatile long lastDeletedRunMillis;
     private volatile boolean inProgress;
-    private BukkitTask scheduledTask;
+    private SchedulerTask scheduledTask;
 
     public HousekeepingManager(BentoBox plugin) {
         this.plugin = plugin;
@@ -79,7 +79,7 @@ public class HousekeepingManager {
         if (scheduledTask != null) {
             return;
         }
-        scheduledTask = Bukkit.getScheduler().runTaskTimer(plugin,
+        scheduledTask = plugin.getScheduler().runGlobalTimer(
                 this::checkAndMaybeRun, STARTUP_DELAY_TICKS, CHECK_INTERVAL_TICKS);
         plugin.log("Housekeeping scheduler started (deleted-sweep="
                 + plugin.getSettings().isHousekeepingDeletedEnabled()
@@ -177,7 +177,7 @@ public class HousekeepingManager {
             return;
         }
         inProgress = true;
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        plugin.getScheduler().runAsync(() -> {
             try {
                 // Save worlds once per cycle — both sweeps see a consistent
                 // on-disk snapshot.
@@ -206,7 +206,7 @@ public class HousekeepingManager {
     private boolean saveAllWorlds() {
         plugin.log("Housekeeping: saving all worlds before purge...");
         CompletableFuture<Void> saved = new CompletableFuture<>();
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        plugin.getScheduler().runGlobal(() -> {
             try {
                 Bukkit.getWorlds().forEach(World::save);
                 saved.complete(null);
@@ -316,7 +316,7 @@ public class HousekeepingManager {
 
     private void evictChunksOnMainThread(PurgeScanResult scan) {
         CompletableFuture<Void> done = new CompletableFuture<>();
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        plugin.getScheduler().runGlobal(() -> {
             try {
                 plugin.getPurgeRegionsService().evictChunks(scan);
                 done.complete(null);

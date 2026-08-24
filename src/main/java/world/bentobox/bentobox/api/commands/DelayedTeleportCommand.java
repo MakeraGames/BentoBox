@@ -11,9 +11,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.scheduler.BukkitTask;
 
 import world.bentobox.bentobox.api.addons.Addon;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.api.user.User;
 
 /**
@@ -146,7 +146,11 @@ public abstract class DelayedTeleportCommand extends CompositeCommand implements
     public void delayCommand(User user, String message, Runnable confirmed) {
         if (getSettings().getDelayTime() < 1 || user.isOp() || user.hasPermission(getPermissionPrefix() + "mod.bypasscooldowns")
                 || user.hasPermission(getPermissionPrefix() + "mod.bypassdelays")) {
-            Bukkit.getScheduler().runTask(getPlugin(), confirmed);
+            if (user.isPlayer()) {
+                getPlugin().getScheduler().runAtEntity(user.getPlayer(), confirmed);
+            } else {
+                getPlugin().getScheduler().runGlobal(confirmed);
+            }
             return;
         }
         // Check for pending delays
@@ -165,8 +169,8 @@ public abstract class DelayedTeleportCommand extends CompositeCommand implements
         // Tell user that they need to stand still
         user.sendMessage("commands.delay.stand-still", "[seconds]", String.valueOf(getSettings().getDelayTime()));
         // Set up the run task
-        BukkitTask task = Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-            Bukkit.getScheduler().runTask(getPlugin(), toBeMonitored.get(uuid).runnable());
+        SchedulerTask task = getPlugin().getScheduler().runAtEntityLater(user.getPlayer(), () -> {
+            getPlugin().getScheduler().runAtEntity(user.getPlayer(), toBeMonitored.get(uuid).runnable());
             toBeMonitored.remove(uuid);
         }, getPlugin().getSettings().getDelayTime() * 20L);
 
@@ -191,5 +195,5 @@ public abstract class DelayedTeleportCommand extends CompositeCommand implements
      * @param task     The cancellation task that will run if the player moves
      * @param location The player's original location for movement comparison
      */
-    private record DelayedCommand(Runnable runnable, BukkitTask task, Location location) {}
+    private record DelayedCommand(Runnable runnable, SchedulerTask task, Location location) {}
 }

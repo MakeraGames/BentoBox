@@ -3,14 +3,12 @@ package world.bentobox.bentobox.api.commands;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitTask;
-
 import world.bentobox.bentobox.api.addons.Addon;
 import world.bentobox.bentobox.api.dialogs.BBDialog;
 import world.bentobox.bentobox.api.dialogs.DialogBuilder;
 import world.bentobox.bentobox.api.dialogs.DialogButton;
 import world.bentobox.bentobox.api.dialogs.Dialogs;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.util.Util;
 
@@ -110,7 +108,12 @@ public abstract class ConfirmableCommand extends CompositeCommand {
         if (toBeConfirmed.containsKey(user)) {
             if (toBeConfirmed.get(user).topLabel().equals(getTopLabel()) && toBeConfirmed.get(user).label().equalsIgnoreCase(getLabel())) {
                 toBeConfirmed.get(user).task().cancel();
-                Bukkit.getScheduler().runTask(getPlugin(), toBeConfirmed.get(user).runnable());
+                Runnable runnable = toBeConfirmed.get(user).runnable();
+                if (user.isPlayer()) {
+                    getPlugin().getScheduler().runAtEntity(user.getPlayer(), runnable);
+                } else {
+                    getPlugin().getScheduler().runGlobal(runnable);
+                }
                 toBeConfirmed.remove(user);
                 return;
             } else {
@@ -125,10 +128,15 @@ public abstract class ConfirmableCommand extends CompositeCommand {
         // Tell user that they need to confirm
         user.sendMessage("commands.confirmation.confirm", "[seconds]", String.valueOf(getSettings().getConfirmationTime()));
         // Set up a cancellation task
-        BukkitTask task = Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
+        Runnable cancellation = () -> {
             user.sendMessage("commands.confirmation.request-cancelled");
             toBeConfirmed.remove(user);
-        }, getPlugin().getSettings().getConfirmationTime() * 20L);
+        };
+        SchedulerTask task = user.isPlayer()
+                ? getPlugin().getScheduler().runAtEntityLater(user.getPlayer(), cancellation,
+                        getPlugin().getSettings().getConfirmationTime() * 20L)
+                : getPlugin().getScheduler().runGlobalLater(cancellation,
+                        getPlugin().getSettings().getConfirmationTime() * 20L);
 
         // Add to the global confirmation map
         toBeConfirmed.put(user, new Confirmer(getTopLabel(), getLabel(), confirmed, task));
@@ -196,5 +204,5 @@ public abstract class ConfirmableCommand extends CompositeCommand {
      * @param runnable The action to execute when confirmed
      * @param task    The cancellation task that will run if confirmation times out
      */
-    private record Confirmer(String topLabel, String label, Runnable runnable, BukkitTask task) { }
+    private record Confirmer(String topLabel, String label, Runnable runnable, SchedulerTask task) { }
 }

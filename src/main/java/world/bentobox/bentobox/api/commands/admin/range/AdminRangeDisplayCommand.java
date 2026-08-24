@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 
 import world.bentobox.bentobox.api.commands.CompositeCommand;
+import world.bentobox.bentobox.api.scheduler.SchedulerTask;
 import world.bentobox.bentobox.api.user.User;
 import world.bentobox.bentobox.database.objects.Island;
 
@@ -27,7 +27,7 @@ public class AdminRangeDisplayCommand extends CompositeCommand {
     private static final Particle PARTICLE2 = Particle.DUST;
 
     // Map of users to which ranges must be displayed
-    private final Map<User, Integer> displayRanges = new HashMap<>();
+    private final Map<User, SchedulerTask> displayRanges = new HashMap<>();
 
     public AdminRangeDisplayCommand(CompositeCommand parent) {
         super(parent, DISPLAY, SHOW, HIDE);
@@ -67,7 +67,7 @@ public class AdminRangeDisplayCommand extends CompositeCommand {
     private void showZones(User user) {
         user.sendMessage("commands.admin.range.display.showing");
         user.sendMessage("commands.admin.range.display.hint");
-        displayRanges.put(user, Bukkit.getScheduler().scheduleSyncRepeatingTask(getPlugin(), () -> {
+        displayRanges.put(user, getPlugin().getScheduler().runAtEntityTimer(user.getPlayer(), () -> {
             if (!user.getPlayer().isOnline()) {
                 hideZones(user);
             }
@@ -90,7 +90,7 @@ public class AdminRangeDisplayCommand extends CompositeCommand {
 
     private void hideZones(User user) {
         user.sendMessage("commands.admin.range.display.hiding");
-        Bukkit.getScheduler().cancelTask(displayRanges.get(user));
+        displayRanges.get(user).cancel();
         displayRanges.remove(user);
     }
 
